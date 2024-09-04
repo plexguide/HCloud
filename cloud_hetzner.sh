@@ -79,31 +79,27 @@ setup_directories() {
   mkdir -p /pg/hcloud
 }
 
-# Function to show initial passwords
-show_initial_passwords() {
+# Main menu function
+main_menu() {
   clear
-  echo -e "${CYAN}${BOLD}Initial Server Passwords:${NC}\n"
+  echo -e "${CYAN}${BOLD}PG: Hetzner Cloud Manager${NC}\n"
+  echo -e "[1] Deploy a New Server"
+  echo -e "[2] Destroy a Server"
+  echo -e "[A] List Servers"
+  echo -e "[B] Show Initial Passwords"
+  echo -e "[T] Change API Token"
+  echo -e "[Z] Exit\n"
+  read -p 'Select an option: ' option </dev/tty
 
-  # Get a list of existing servers from Hetzner Cloud
-  existing_servers=$(hcloud server list -o noheader | awk '{print $2}')
-
-  # Loop through each .info file in /pg/hcloud/ and check if the server exists
-  for file in /pg/hcloud/*.info; do
-    server_name=$(basename "$file" .info)
-
-    if echo "$existing_servers" | grep -wq "$server_name"; then
-      # If server exists, show its password
-      grep -i 'password' "$file"
-    else
-      # If server doesn't exist, remove the password entry
-      echo "Server $server_name no longer exists. Removing stored password."
-      sed -i '/password/d' "$file"
-    fi
-  done
-
-  echo ""
-  read -p 'Press [ENTER] to continue...' </dev/tty
-  main_menu
+  case ${option,,} in
+    1) deploy_server ;;
+    2) destroy_server ;;
+    a) list_servers ;;
+    b) show_initial_passwords ;;
+    t) change_token ;;
+    z) exit 0 ;;
+    *) main_menu ;;
+  esac
 }
 
 # Function to deploy a new server
@@ -185,7 +181,7 @@ deploy_server() {
     case $server_type_option in
       1) server_type="ccx13" ;;
       2) server_type="ccx23" ;;
-       3) server_type="ccx33" ;;
+      3) server_type="ccx33" ;;
       4) server_type="ccx43" ;;
       5) server_type="ccx53" ;;
       6) server_type="ccx63" ;;
@@ -231,6 +227,30 @@ destroy_server() {
     echo "Server $server_name does not exist."
   fi
 
+  read -p 'Press [ENTER] to continue...' </dev/tty
+  main_menu
+}
+
+# Function to show initial passwords and remove entries for non-existing servers
+show_initial_passwords() {
+  clear
+  echo -e "${CYAN}${BOLD}Initial Server Passwords:${NC}\n"
+  
+  # Get the list of existing servers
+  existing_servers=$(hcloud server list | awk 'NR>1 {print $2}')
+
+  # Iterate through info files and remove those not existing in Hetzner Cloud
+  for file in /pg/hcloud/*.info; do
+    server_name=$(basename "$file" .info)
+    if ! echo "$existing_servers" | grep -q "$server_name"; then
+      echo -e "${RED}Server $server_name no longer exists. Removing stored password.${NC}"
+      sed -i '/password/d' "$file"
+    else
+      grep -i 'password' "$file"
+    fi
+  done
+
+  echo ""
   read -p 'Press [ENTER] to continue...' </dev/tty
   main_menu
 }

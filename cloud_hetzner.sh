@@ -243,8 +243,11 @@ show_initial_passwords() {
   for file in /pg/hcloud/*.info; do
     server_name=$(basename "$file" .info)
     if echo "$existing_servers" | grep -q "$server_name"; then
-      # If server exists, show stored passwords if available
-      grep -i 'password' "$file"
+      # If server exists, show the server name and its stored password
+      password_line=$(grep -i 'password' "$file")
+      if [ -n "$password_line" ]; then
+        echo "Server ${server_name}: $password_line"
+      fi
     else
       # If server no longer exists, remove stored password if it exists
       if grep -qi 'password' "$file"; then

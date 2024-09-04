@@ -195,6 +195,7 @@ deploy_server() {
   hcloud server create --name "$server_name" --type "$server_type" --image "$os" > "/pg/hcloud/$server_name.info"
   echo -e "\nServer information:"
   cat "/pg/hcloud/$server_name.info"
+  echo ""
   read -p 'Press [ENTER] to continue...' </dev/tty
   main_menu
 }

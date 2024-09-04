@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Title: PG Cloud Hetzner Manager Script
-# Description: Script to manage Hetzner Cloud servers using the new hcloud CLI
-
 # Configuration file path for storing the token
 TOKEN_FILE="/pg/hcloud/.token"
 

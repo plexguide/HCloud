@@ -226,7 +226,7 @@ destroy_server() {
   else
     echo "Server $server_name does not exist."
   fi
-
+  echo ""
   read -p 'Press [ENTER] to continue...' </dev/tty
   main_menu
 }

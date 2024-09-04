@@ -235,18 +235,21 @@ destroy_server() {
 show_initial_passwords() {
   clear
   echo -e "${CYAN}${BOLD}Initial Server Passwords:${NC}\n"
-  
-  # Get the list of existing servers
+
+  # Get the list of existing servers from Hetzner Cloud
   existing_servers=$(hcloud server list | awk 'NR>1 {print $2}')
 
-  # Iterate through info files and remove those not existing in Hetzner Cloud
+  # Iterate through info files and manage stored passwords
   for file in /pg/hcloud/*.info; do
     server_name=$(basename "$file" .info)
-    if ! echo "$existing_servers" | grep -q "$server_name"; then
-      echo -e "${RED}Server $server_name no longer exists. Removing stored password.${NC}"
-      sed -i '/password/d' "$file"
-    else
+    if echo "$existing_servers" | grep -q "$server_name"; then
+      # If server exists, show stored passwords if available
       grep -i 'password' "$file"
+    else
+      # If server no longer exists, remove stored password if it exists
+      if grep -qi 'password' "$file"; then
+        sed -i '/password/d' "$file"
+      fi
     fi
   done
 

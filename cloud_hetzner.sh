@@ -79,27 +79,31 @@ setup_directories() {
   mkdir -p /pg/hcloud
 }
 
-# Main menu function
-main_menu() {
+# Function to show initial passwords
+show_initial_passwords() {
   clear
-  echo -e "${CYAN}${BOLD}PG: Hetzner Cloud Manager${NC}\n"
-  echo -e "[1] Deploy a New Server"
-  echo -e "[2] Destroy a Server"
-  echo -e "[A] List Servers"
-  echo -e "[B] Show Initial Passwords"
-  echo -e "[T] Change API Token"
-  echo -e "[Z] Exit\n"
-  read -p 'Select an option: ' option </dev/tty
+  echo -e "${CYAN}${BOLD}Initial Server Passwords:${NC}\n"
 
-  case ${option,,} in
-    1) deploy_server ;;
-    2) destroy_server ;;
-    a) list_servers ;;
-    b) show_initial_passwords ;;
-    t) change_token ;;
-    z) exit 0 ;;
-    *) main_menu ;;
-  esac
+  # Get a list of existing servers from Hetzner Cloud
+  existing_servers=$(hcloud server list -o noheader | awk '{print $2}')
+
+  # Loop through each .info file in /pg/hcloud/ and check if the server exists
+  for file in /pg/hcloud/*.info; do
+    server_name=$(basename "$file" .info)
+
+    if echo "$existing_servers" | grep -wq "$server_name"; then
+      # If server exists, show its password
+      grep -i 'password' "$file"
+    else
+      # If server doesn't exist, remove the password entry
+      echo "Server $server_name no longer exists. Removing stored password."
+      sed -i '/password/d' "$file"
+    fi
+  done
+
+  echo ""
+  read -p 'Press [ENTER] to continue...' </dev/tty
+  main_menu
 }
 
 # Function to deploy a new server
@@ -151,7 +155,7 @@ deploy_server() {
     echo -e "[7]  CPX41 -  8vCPU | 16GB RAM  | AMD  "
     echo -e "[8]  CX52  - 16vCPU | 32GB RAM  | Intel"
     echo -e "[9]  CPX51 - 16vCPU | 32GB RAM  | AMD  "
-    echo -e "[Z] Exit\n"
+    echo -e "[Z]  Exit\n"
     read -p 'Select an option: ' server_type_option </dev/tty
 
     case $server_type_option in
@@ -175,13 +179,13 @@ deploy_server() {
     echo -e "[4]  CCX43 - 16vCPU |  64GB RAM  | AMD"
     echo -e "[5]  CCX53 - 32vCPU | 128GB RAM  | AMD"
     echo -e "[6]  CCX63 - 48vCPU | 192GB RAM  | AMD"
-    echo -e "[Z] Exit\n"
+    echo -e "[Z]  Exit\n"
     read -p 'Select an option: ' server_type_option </dev/tty
 
     case $server_type_option in
       1) server_type="ccx13" ;;
       2) server_type="ccx23" ;;
-      3) server_type="ccx33" ;;
+       3) server_type="ccx33" ;;
       4) server_type="ccx43" ;;
       5) server_type="ccx53" ;;
       6) server_type="ccx63" ;;
@@ -226,17 +230,7 @@ destroy_server() {
   else
     echo "Server $server_name does not exist."
   fi
-  echo ""
-  read -p 'Press [ENTER] to continue...' </dev/tty
-  main_menu
-}
 
-# Function to show initial passwords
-show_initial_passwords() {
-  clear
-  echo -e "${CYAN}${BOLD}Initial Server Passwords:${NC}\n"
-  grep -i 'password' /pg/hcloud/*.info
-  echo ""
   read -p 'Press [ENTER] to continue...' </dev/tty
   main_menu
 }

@@ -114,9 +114,6 @@ deploy_server() {
   echo -e "[3] Ubuntu 24.04"
   echo -e "[4] Debian 11"
   echo -e "[5] Fedora 40"
-  echo -e "[6] CentOS 9"
-  echo -e "[7] Rocky Linux 9"
-  echo -e "[8] AlmaLinux 9"
   echo -e "[Z] Exit\n"
   read -p 'Select an option: ' os_option </dev/tty
 
@@ -126,9 +123,6 @@ deploy_server() {
     3) os="ubuntu-24.04" ;;
     4) os="debian-11" ;;
     5) os="fedora-40" ;;
-    6) os="centos-9" ;;
-    7) os="rockylinux-9" ;;
-    8) os="almalinux-9" ;;
     [Zz]) main_menu ;;
     *) deploy_server ;;
   esac
